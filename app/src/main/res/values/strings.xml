@@ -1,0 +1,10 @@
+<resources>
+    <string name="app_name">BitNotifier</string>
+    <string name="prices">Prices</string>
+    <string name="last_traded_price">Last traded price :</string>
+    <string name="lowest_ask">Lowest ask</string>
+    <string name="highest_bid">Highest bid</string>
+    <string name="min_24hrs">Min 24 hrs</string>
+    <string name="max_24hrs">Max 24 hrs</string>
+    <string name="vol_24hrs">Vol 24 hrs</string>
+</resources>
