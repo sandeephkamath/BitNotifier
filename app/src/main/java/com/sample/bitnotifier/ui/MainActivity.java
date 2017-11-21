@@ -1,10 +1,13 @@
 package com.sample.bitnotifier.ui;
 
+import android.app.Notification;
+import android.app.NotificationManager;
 import android.app.job.JobInfo;
 import android.app.job.JobScheduler;
 import android.content.ComponentName;
 import android.content.Context;
 import android.support.v4.app.FragmentManager;
+import android.support.v4.app.NotificationCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
@@ -29,8 +32,10 @@ import com.sample.bitnotifier.network.ResponseCallback;
 import com.sample.bitnotifier.service.NotifierJob;
 import com.sample.bitnotifier.service.TaskService;
 import com.sample.bitnotifier.ui.dialog.EditDialogFragment;
+import com.sample.bitnotifier.utils.SharedPrefUtils;
 
 import java.util.ArrayList;
+import java.util.Map;
 
 import javax.inject.Inject;
 
@@ -44,6 +49,9 @@ public class MainActivity extends AppCompatActivity implements ItemClickListener
 
     @Inject
     APIService apiService;
+
+    @Inject
+    SharedPrefUtils sharedPrefUtils;
 
     @BindView(R.id.prices)
     RecyclerView pricesListView;
@@ -77,6 +85,7 @@ public class MainActivity extends AppCompatActivity implements ItemClickListener
                         showPrices(tickerResponse);
                         Toast.makeText(MainActivity.this, "Success", Toast.LENGTH_SHORT).show();
                         progressBar.setVisibility(View.GONE);
+                        checkValues(tickerResponse);
                     }
 
                     @Override
@@ -109,5 +118,39 @@ public class MainActivity extends AppCompatActivity implements ItemClickListener
     @Override
     public void onDataChange() {
         getAPIData();
+    }
+
+    public void sendNotification(String title, String value) {
+
+        NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(this, "M_CH_ID");
+
+        notificationBuilder.setAutoCancel(true)
+                .setDefaults(Notification.DEFAULT_ALL)
+                .setWhen(System.currentTimeMillis())
+                .setSmallIcon(R.mipmap.ic_launcher)
+                .setTicker(getString(R.string.app_name))
+                .setContentTitle("Alert - " + title)
+                .setContentText(value)
+                .setContentInfo(getString(R.string.app_name));
+
+        NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+        if (notificationManager != null) {
+            notificationManager.notify((int) System.currentTimeMillis(), notificationBuilder.build());
+        }
+    }
+
+    private void checkValues(TickerResponse tickerResponse) {
+        for (Map.Entry<String, BitCoinModel> entry : tickerResponse.getStats().entrySet()) {
+            String key = entry.getKey();
+            BitCoinModel bitCoinModel = entry.getValue();
+            long setValue = sharedPrefUtils.getValue(key);
+            long range = sharedPrefUtils.getRange(key);
+            boolean notifyStatus = sharedPrefUtils.getNotifyStatus(key);
+            if (!notifyStatus) continue;
+            double value = Double.parseDouble(bitCoinModel.getLast_traded_price());
+            if (Math.abs(setValue - value) <= range) {
+                sendNotification(key, value + " " + setValue);
+            }
+        }
     }
 }

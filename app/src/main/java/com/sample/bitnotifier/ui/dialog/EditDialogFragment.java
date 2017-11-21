@@ -2,6 +2,7 @@ package com.sample.bitnotifier.ui.dialog;
 
 import android.os.Bundle;
 import android.support.v4.app.DialogFragment;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -117,8 +118,15 @@ public class EditDialogFragment extends DialogFragment {
 
 
     private void saveData() {
-        sharedPrefUtils.setValue(Long.parseLong(valueEdit.getText().toString()), bitCoin.getTitle());
-        sharedPrefUtils.setRange(Long.parseLong(rangeEdit.getText().toString()), bitCoin.getTitle());
+        String value = valueEdit.getText().toString().trim();
+        String range = rangeEdit.getText().toString().trim();
+        if (TextUtils.isEmpty(value)) {
+            value = "0";
+        } else if (TextUtils.isEmpty(range)) {
+            range = "0";
+        }
+        sharedPrefUtils.setValue(Long.parseLong(value), bitCoin.getTitle());
+        sharedPrefUtils.setRange(Long.parseLong(range), bitCoin.getTitle());
         if (getString(R.string.start_notification).equalsIgnoreCase(notification.getText().toString())) {
             sharedPrefUtils.setNotify(false, bitCoin.getTitle());
         } else {
