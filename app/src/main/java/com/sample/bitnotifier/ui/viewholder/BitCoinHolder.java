@@ -1,15 +1,18 @@
 package com.sample.bitnotifier.ui.viewholder;
 
 import android.view.View;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.sample.bitnotifier.R;
+import com.sample.bitnotifier.interfaces.ItemClickListener;
 import com.sample.bitnotifier.model.BaseModel;
 import com.sample.bitnotifier.model.BitCoin;
 import com.sample.bitnotifier.model.BitCoinModel;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import butterknife.OnClick;
 
 public class BitCoinHolder extends BaseViewHolder {
 
@@ -33,7 +36,15 @@ public class BitCoinHolder extends BaseViewHolder {
 
     @BindView(R.id.title)
     TextView title;
+    private ItemClickListener mListener;
+    private BitCoin bitCoin;
 
+    @OnClick(R.id.root)
+    void onItemClick() {
+        if (mListener != null) {
+            mListener.onItemClick(bitCoin);
+        }
+    }
 
     public BitCoinHolder(View itemView) {
         super(itemView);
@@ -43,7 +54,8 @@ public class BitCoinHolder extends BaseViewHolder {
     @Override
     public void onBind(BaseModel baseModel) {
         if (!(baseModel instanceof BitCoin)) return;
-        title.setText(((BitCoin) baseModel).getTitle());
+        bitCoin = (BitCoin) baseModel;
+        title.setText(bitCoin.getTitle());
         BitCoinModel bitCoinModel = ((BitCoin) baseModel).getBitCoinModel();
         lastTradedPrice.setText(bitCoinModel.getLast_traded_price());
         lowestAsk.setText(bitCoinModel.getLowest_ask());
@@ -51,6 +63,9 @@ public class BitCoinHolder extends BaseViewHolder {
         minHrs.setText(bitCoinModel.getMin_24hrs());
         maxHrs.setText(bitCoinModel.getMax_24hrs());
         volHrs.setText(bitCoinModel.getVol_24hrs());
+    }
 
+    public void setItemClickListener(ItemClickListener listener) {
+        mListener = listener;
     }
 }

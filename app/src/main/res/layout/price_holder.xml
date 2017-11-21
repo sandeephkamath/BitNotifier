@@ -21,4 +21,20 @@
         android:layout_weight="1"
         tools:text="Value" />
 
+    <TextView
+        android:id="@+id/value_set"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/margin_5"
+        android:layout_weight="1"
+        tools:text="Value" />
+
+    <TextView
+        android:id="@+id/range"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/margin_5"
+        android:layout_weight="1"
+        tools:text="Value" />
+
 </LinearLayout>

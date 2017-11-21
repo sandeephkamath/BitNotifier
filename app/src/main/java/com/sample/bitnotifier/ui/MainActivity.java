@@ -4,21 +4,31 @@ import android.app.job.JobInfo;
 import android.app.job.JobScheduler;
 import android.content.ComponentName;
 import android.content.Context;
+import android.support.v4.app.FragmentManager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
+import android.view.View;
+import android.widget.ProgressBar;
 import android.widget.Toast;
 
+import com.evernote.android.job.JobRequest;
 import com.sample.bitnotifier.R;
 import com.sample.bitnotifier.application.BitNotifierApplication;
+import com.sample.bitnotifier.interfaces.ItemClickListener;
+import com.sample.bitnotifier.interfaces.OnDataChangeListener;
 import com.sample.bitnotifier.model.BaseModel;
+import com.sample.bitnotifier.model.BitCoin;
+import com.sample.bitnotifier.model.BitCoinModel;
 import com.sample.bitnotifier.model.Prices;
 import com.sample.bitnotifier.model.TickerResponse;
 import com.sample.bitnotifier.network.APIService;
 import com.sample.bitnotifier.network.ResponseCallback;
+import com.sample.bitnotifier.service.NotifierJob;
 import com.sample.bitnotifier.service.TaskService;
+import com.sample.bitnotifier.ui.dialog.EditDialogFragment;
 
 import java.util.ArrayList;
 
@@ -29,7 +39,7 @@ import butterknife.ButterKnife;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.schedulers.Schedulers;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements ItemClickListener, OnDataChangeListener {
 
 
     @Inject
@@ -38,8 +48,8 @@ public class MainActivity extends AppCompatActivity {
     @BindView(R.id.prices)
     RecyclerView pricesListView;
 
-    JobScheduler jobScheduler;
-
+    @BindView(R.id.progress_bar)
+    ProgressBar progressBar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -48,21 +58,16 @@ public class MainActivity extends AppCompatActivity {
         ButterKnife.bind(this);
         BitNotifierApplication.getApplicationComponent().inject(this);
         getAPIData();
-        jobScheduler = (JobScheduler)
-                getSystemService(Context.JOB_SCHEDULER_SERVICE);
-        JobInfo.Builder builder = new JobInfo.Builder(1,
-                new ComponentName(getPackageName(),
-                        TaskService.class.getName()));
-        builder.setPeriodic(3000);
-        builder.setRequiredNetworkType(JobInfo.NETWORK_TYPE_ANY);
 
-        if (jobScheduler.schedule(builder.build()) <= JobScheduler.RESULT_FAILURE) {
-            Log.e("TASKSCHEDULE", "onCreate: Some error while scheduling the job");
-        }
+        new JobRequest.Builder(NotifierJob.class.getSimpleName())
+                .setPeriodic(900000)
+                .build()
+                .schedule();
 
     }
 
     private void getAPIData() {
+        progressBar.setVisibility(View.VISIBLE);
         apiService.getData()
                 .subscribeOn(Schedulers.newThread())
                 .observeOn(AndroidSchedulers.mainThread())
@@ -71,18 +76,38 @@ public class MainActivity extends AppCompatActivity {
                     public void onResponse(TickerResponse tickerResponse) {
                         showPrices(tickerResponse);
                         Toast.makeText(MainActivity.this, "Success", Toast.LENGTH_SHORT).show();
+                        progressBar.setVisibility(View.GONE);
                     }
 
                     @Override
                     public void onFailure(Throwable t) {
                         Toast.makeText(MainActivity.this, "Failure", Toast.LENGTH_SHORT).show();
+                        progressBar.setVisibility(View.GONE);
                     }
                 });
     }
 
     private void showPrices(TickerResponse tickerResponse) {
         MainAdapter adapter = new MainAdapter(tickerResponse.getList());
+        adapter.setItemClickListener(this);
         pricesListView.setLayoutManager(new LinearLayoutManager(this));
         pricesListView.setAdapter(adapter);
+    }
+
+    private void showEditDialog(BitCoin bitCoin) {
+        FragmentManager fm = getSupportFragmentManager();
+        EditDialogFragment editNameDialogFragment = EditDialogFragment.newInstance(bitCoin);
+        editNameDialogFragment.setChangeListener(this);
+        editNameDialogFragment.show(fm, EditDialogFragment.class.getSimpleName());
+    }
+
+    @Override
+    public void onItemClick(BitCoin bitCoin) {
+        showEditDialog(bitCoin);
+    }
+
+    @Override
+    public void onDataChange() {
+        getAPIData();
     }
 }

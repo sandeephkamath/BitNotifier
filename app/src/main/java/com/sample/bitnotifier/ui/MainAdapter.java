@@ -6,6 +6,7 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.sample.bitnotifier.R;
+import com.sample.bitnotifier.interfaces.ItemClickListener;
 import com.sample.bitnotifier.model.BaseModel;
 import com.sample.bitnotifier.model.BitCoin;
 import com.sample.bitnotifier.model.Price;
@@ -24,9 +25,14 @@ public class MainAdapter extends RecyclerView.Adapter<BaseViewHolder> {
     private final int PRICES_VIEW_TYPE = 0;
     private final int BITCOIN_VIEW_TYPE = 1;
     private final int PRICE_VIEW_TYPE = 2;
+    private ItemClickListener mListener;
 
     public MainAdapter(ArrayList<BaseModel> response) {
         list = response;
+    }
+
+    public void setItemClickListener(ItemClickListener listener) {
+        mListener = listener;
     }
 
     @Override
@@ -42,7 +48,9 @@ public class MainAdapter extends RecyclerView.Adapter<BaseViewHolder> {
                 viewHolder = new PricesHolder(view);
                 break;
             case BITCOIN_VIEW_TYPE:
-                viewHolder = new BitCoinHolder(view);
+                BitCoinHolder bitCoinHolder = new BitCoinHolder(view);
+                bitCoinHolder.setItemClickListener(mListener);
+                viewHolder = bitCoinHolder;
                 break;
         }
         return viewHolder;
