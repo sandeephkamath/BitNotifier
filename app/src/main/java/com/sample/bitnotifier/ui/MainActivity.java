@@ -69,6 +69,7 @@ public class MainActivity extends AppCompatActivity implements ItemClickListener
 
         new JobRequest.Builder(NotifierJob.class.getSimpleName())
                 .setPeriodic(900000)
+                .setUpdateCurrent(true)
                 .build()
                 .schedule();
 
@@ -85,7 +86,7 @@ public class MainActivity extends AppCompatActivity implements ItemClickListener
                         showPrices(tickerResponse);
                         Toast.makeText(MainActivity.this, "Success", Toast.LENGTH_SHORT).show();
                         progressBar.setVisibility(View.GONE);
-                        checkValues(tickerResponse);
+                       // checkValues(tickerResponse);
                     }
 
                     @Override
@@ -120,37 +121,4 @@ public class MainActivity extends AppCompatActivity implements ItemClickListener
         getAPIData();
     }
 
-    public void sendNotification(String title, String value) {
-
-        NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(this, "M_CH_ID");
-
-        notificationBuilder.setAutoCancel(true)
-                .setDefaults(Notification.DEFAULT_ALL)
-                .setWhen(System.currentTimeMillis())
-                .setSmallIcon(R.mipmap.ic_launcher)
-                .setTicker(getString(R.string.app_name))
-                .setContentTitle("Alert - " + title)
-                .setContentText(value)
-                .setContentInfo(getString(R.string.app_name));
-
-        NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-        if (notificationManager != null) {
-            notificationManager.notify((int) System.currentTimeMillis(), notificationBuilder.build());
-        }
-    }
-
-    private void checkValues(TickerResponse tickerResponse) {
-        for (Map.Entry<String, BitCoinModel> entry : tickerResponse.getStats().entrySet()) {
-            String key = entry.getKey();
-            BitCoinModel bitCoinModel = entry.getValue();
-            long setValue = sharedPrefUtils.getValue(key);
-            long range = sharedPrefUtils.getRange(key);
-            boolean notifyStatus = sharedPrefUtils.getNotifyStatus(key);
-            if (!notifyStatus) continue;
-            double value = Double.parseDouble(bitCoinModel.getLast_traded_price());
-            if (Math.abs(setValue - value) <= range) {
-                sendNotification(key, value + " " + setValue);
-            }
-        }
-    }
 }

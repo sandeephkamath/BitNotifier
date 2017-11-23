@@ -21,14 +21,20 @@ public class SharedPrefUtils {
 
     public SharedPrefUtils(Context context) {
         this.context = context;
-        sharedPref = context.getSharedPreferences("notifier_sp",Context.MODE_PRIVATE);
+        sharedPref = context.getSharedPreferences("notifier_sp", Context.MODE_PRIVATE);
         editor = sharedPref.edit();
     }
 
     @Provides
     @Singleton
-    public SharedPrefUtils providesSharedPrefUtils(){
+    public SharedPrefUtils providesSharedPrefUtils() {
         return new SharedPrefUtils(context);
+    }
+
+    @Provides
+    @Singleton
+    public Context providesContext() {
+        return context;
     }
 
     public void saveValue(long value, long range, boolean toNotify, String key) {

@@ -2,6 +2,7 @@ package com.sample.bitnotifier.application;
 
 import com.sample.bitnotifier.model.Prices;
 import com.sample.bitnotifier.model.TickerResponse;
+import com.sample.bitnotifier.service.NotifierJob;
 import com.sample.bitnotifier.service.TaskService;
 import com.sample.bitnotifier.ui.MainActivity;
 import com.sample.bitnotifier.network.NetModule;
@@ -25,4 +26,6 @@ public interface ApplicationComponent {
     void inject(Prices prices);
 
     void inject(EditDialogFragment editDialogFragment);
+
+    void inject(NotifierJob notifierJob);
 }
